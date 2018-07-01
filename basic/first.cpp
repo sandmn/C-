@@ -1,5 +1,4 @@
 
-
 //名字空间和域作用解析符的使用
 
 #include<iostream>
