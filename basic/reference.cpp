@@ -1,46 +1,78 @@
 #include<iostream>
 using namespace std;
 
-//传引用做返回值，引用做返回值
-
-//传值返回，出了作用域，变量不在
-//int fun(int a,int b)
+////通过汇编看函数栈帧调用
+//int Add(int a,int b)
 //{
-//    return a+b;
+//    return a + b;
+//}
+//void Test()
+//{
+//    int ret = Add(1,2);
+//}
+//int main()
+//{
+//    Test();
+//    return 0;
 //}
 
-////引用做返回值，出了作用域，变量还在
+
+
+
+////传引用做返回值，引用做返回值
+//
+////传值返回，出了作用域，变量不在
+////int fun(int a,int b)
+////{
+////    return a+b;
+////}
+//
+//////引用做返回值，出了作用域，变量还在
+////int& fun(int a,int b)
+////{
+////    static int ret = a + b;
+////    return ret;
+////}
+//
+////引用做返回值，出了作用域，变量不在，结果未定义
 //int& fun(int a,int b)
 //{
-//    static int ret = a + b;
+//    int ret = a + b;
 //    return ret;
 //}
+//
+//int main()
+//{
+//    //将引用变量赋值给普通变量
+//    int ret = 10;
+//    int& ret1 = ret;
+//    int ret2 = ret;
+//    cout<<ret<<endl;
+//    cout<<ret1<<endl;
+//    cout<<ret2<<endl;
+//
+//    ret = 20;
+//    cout<<ret<<endl;
+//    cout<<ret1<<endl;
+//    cout<<ret2<<endl;
 
-//引用做返回值，出了作用域，变量不在，结果未定义
-int& fun(int a,int b)
-{
-    int ret = a + b;
-    return ret;
-}
-
-int main()
-{
-   // //将引用变量赋值给普通变量
-   // int ret = 10;
-   // int& ret1 = ret;
-   // int ret2 = ret;
-   // cout<<ret2<<endl;
+    
+//
+//
+//    int a = 1;
+//    int b = 2;
+//    int ret = fun(a,b);
+//    cout<<ret<<endl;
+//    fun(10,20);
+//    cout<<ret<<endl;
+//    //int& ret = fun(a,b);
+//    //cout<<ret<<endl;
+//}
 
 
-    int a = 1;
-    int b = 2;
-    int ret = fun(a,b);
-    cout<<ret<<endl;
-    fun(10,20);
-    cout<<ret<<endl;
-    //int& ret = fun(a,b);
-    //cout<<ret<<endl;
-}
+
+
+
 //当不希望函数内改变参数的值时，可以使用常引用传参
 
 ////利用大数据测试值传递和引用传递的效率
