@@ -1,7 +1,51 @@
 #include<iostream>
 using namespace std;
 
-////通过汇编看函数栈帧调用
+
+void Swap(int& i,int& r)
+{
+    int temp = i;
+    i = r;
+    r = temp;
+}
+
+void Test()
+{
+    //指针可以指向空
+    int* p = 0;
+    //引用必须指向有效的变量
+    int& a = *p;
+    int b = 2;
+    Swap(a,b);
+}
+int main()
+{
+    Test();
+    return 0;
+}
+
+
+////sizeof引用的大小为其所指向的变量的大小
+////如果是不同类型之间的引用，则sizeof引用的大小为其所指向临时变量的大小
+////const常引用不能进行自增自减操作
+//int main()
+//{
+//    
+//    const int& a = 2.3;
+//    //a++;
+//    cout<<sizeof(a)<<endl;
+//    const double&b = 3;
+//    cout<<sizeof(b)<<endl;
+//    
+//    int c = 5;
+//    int& d = c;
+//    d++;
+//    cout<<d<<endl;
+//    return 0;
+//}
+
+
+//////通过汇编看函数栈帧调用
 //int Add(int a,int b)
 //{
 //    return a + b;
@@ -56,9 +100,6 @@ using namespace std;
 //    cout<<ret1<<endl;
 //    cout<<ret2<<endl;
 
-    
-//
-//
 //    int a = 1;
 //    int b = 2;
 //    int ret = fun(a,b);
