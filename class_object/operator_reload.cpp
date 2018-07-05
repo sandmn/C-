@@ -7,6 +7,7 @@ using namespace std;
 
 
 
+
 //根据年份和月份计算天数
 static int GetMonDay(int year,int month)
 {
@@ -20,7 +21,6 @@ static int GetMonDay(int year,int month)
     }
     return day;
 }
-
 
 
 //对"<"进行重载
@@ -85,17 +85,18 @@ class Date
        //     return *this;//此处因为d是const引用，所以不能将d返回，因为权限不能由小到大，若d不为const引用，就可以
        // }
        
-        //5. 赋值运算符重载函数：防止自己给自己赋值，提高效率
-        Date& operator=(const Date& d)
-        {
-            if(this != &d)
-            {
-                _year = d._year;
-                _month = d._month;
-                _day = d._day;
-            }
-            return *this;
-        }
+        Date& operator=(const Date& d);
+       // //5. 赋值运算符重载函数：防止自己给自己赋值，提高效率
+       // Date& operator=(const Date& d)
+       // {
+       //     if(this != &d)
+       //     {
+       //         _year = d._year;
+       //         _month = d._month;
+       //         _day = d._day;
+       //     }
+       //     return *this;
+       // }
 
         //各类运算符重载
         //1.+=运算符进行重载
@@ -208,30 +209,31 @@ class Date
             return ret;
         }
         
-        //9. ">"运算符重载
-        bool operator>(const Date& d)
-        {
-            if(_year > d._year)
-            {
-                return true;
-            }
-            else if(_year == d._year)
-            {
-                if(_month > d._month)
-                {
-                    return true;
-                }
-                else if(_month == d._month)
-                {
-                    if(_day > d._day)
-                    {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-        //10."=="运算符重载
+        bool operator>(const Date& d);
+       // //9. ">"运算符重载
+       // bool operator>(const Date& d)
+       // {
+       //     if(_year > d._year)
+       //     {
+       //         return true;
+       //     }
+       //     else if(_year == d._year)
+       //     {
+       //         if(_month > d._month)
+       //         {
+       //             return true;
+       //         }
+       //         else if(_month == d._month)
+       //         {
+       //             if(_day > d._day)
+       //             {
+       //                 return true;
+       //             }
+       //         }
+       //     }
+       //     return false;
+       // }
+       // //10."=="运算符重载
         bool operator==(const Date& d)
         {
             return _year == d._year
@@ -291,36 +293,41 @@ class Date
         int _month;
         int _day;
 };
-// //5. 赋值运算符重载函数：防止自己给自己赋值，提高效率
-// Date& operator=(const Date& d)
-// {
-//     if(this != &d)
-//     {
-//         _year = d._year;
-//         _month = d._month;
-//         _day = d._day;
-//     }
-//     return *this;
-// }
+//5. 赋值运算符重载函数：防止自己给自己赋值，提高效率
+Date& Date::operator=(const Date& d)
+{
+    if(this != &d)
+    {
+        _year = d._year;
+        _month = d._month;
+        _day = d._day;
+    }
+    return *this;
+}
+//9. ">"运算符重载
+bool Date::operator>(const Date& d)
+{
+    if(_year > d._year)
+    {
+        return true;
+    }
+    else if(_year == d._year)
+    {
+        if(_month > d._month)
+        {
+            return true;
+        }
+        else if(_month == d._month)
+        {
+            if(_day > d._day)
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
 
-// //1.+=运算符进行重载
-// Date& operator+=(int day)
-// {
-//     _day = _day + day;
-//     //加完之后的天数不合法
-//     while(_day > GetMonDay(_year,_month))
-//     {
-//         //要对月进行进位，所以先减去当前年当前月的天数，再进行进位
-//         _day = _day - GetMonDay(_year,_month);
-//         _month++;//月份加1
-//         if(_month == 13)//如果加完之后的月份不合法，则对年进行进位，然后月份从1月开始计算
-//         {
-//             _year++;
-//             _month = 1;
-//         }
-//     }
-//     return *this;//返回加完天数之后的日期
-// }
 int main()
 {
     Date d1;//调用缺省的构造函数进行初始化
