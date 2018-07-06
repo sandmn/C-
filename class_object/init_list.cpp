@@ -2,6 +2,81 @@
 using namespace std;
 
 
+//成员变量按声明的顺序初始化，而不是按照初始化列表的顺序初始化
+class Date
+{
+    public:
+        //有问题
+        Date(int year,int month,int day)
+             :_day(year)
+             ,_month(_day)
+             ,_year(year)
+        {
+        }
+        void Display()
+        {
+            cout<<_year<<"-"<<_month<<"-"<<_day<<endl;
+        }
+    private:
+        int _year;
+        int _month;
+        int _day;
+};
+int main()
+{
+    Date d(1900,2,11);
+    d.Display();
+    return 0;
+}
+
+
+
+////测试const定义的变量，应用变量的初始化
+//class Date
+//{
+//    public:
+//        Date(int year,int month,int day,int c,int y)
+//        {
+//            _year = year;
+//            _month = month;
+//            _day = day;
+//          //  _c = c;
+//          //  _y = y;
+//        }
+//       // Date(int year,int month,int day,int c,int y)
+//       //     :_year(year)
+//       //      ,_month(month)
+//       //      ,_day(day)
+//       //      ,_c(c)
+//       //      ,_y(y)
+//       // {
+//
+//       // }
+//        void Display()
+//        {
+//            cout<<_c<<"-"<<_y<<endl;
+//        }
+//    private:
+//        int _year;
+//        int _month;
+//        int _day;
+//        const int _c;
+//        int& _y;
+//};
+//
+//int main()
+//{
+//    Date d(1900,1,1,3,5);
+//    d.Display();
+//    return 0;
+//}
+//
+
+
+
+
+
+
 //1.当没有显示的写出初始化列表时，系统也会自动调用初始化列表，定义成员变量并进行初始化
 //  所以说初始化列表时成员变量定义的地方
 //2. 如果没有定义初始化列表，系统会自动调用成员变量的无参或缺省的构造函数对成员变量进行定义
@@ -16,61 +91,61 @@ using namespace std;
 //如果没有定义初始化列表，则会调用无参或全缺省的构造函数
 //如果定义了初始化列表，则会根据初始化列表的形式调用相应的构造函数
 //如果找不到对应的构造函数，则报错
-class Time
-{
-    public:
-        //自定义构造函数
-        Time(int hour = 0,int min = 0,int sec = 0)
-        {
-            cout<<"time"<<endl;
-            _hour = hour;
-            _min = min;
-            _sec = sec;
-        }
-        //自定义拷贝构造函数
-        Time(const Time& t)
-        {
-            cout<<"const time"<<endl;
-            _hour = t._hour;
-            _min = t._min;
-            _sec = t._sec;
-        }
-    private:
-        int _hour;
-        int _min;
-        int _sec;
-};
-class Date
-{
-    public:
-        //自定义构造函数
-        Date(int year,int month,int day,const Time& t)
-        {
-            _year = year;
-            _month = month;
-            _day = day;
-            _t = t;
-        }
-  //     Date(int year,int month,int day,const Time& t)
-  //         :_year(year)
-  //          ,_month(month)
-  //          ,_day(day)
-  //          ,_t(t)
-  //  {}
-    private:
-        int _year;
-        int _month;
-        int _day;
-        Time _t;
-};
-
-int main()
-{
-    Time t;
-    Date(1900,1,1,t);
-    return 0;
-
-}
+//class Time
+//{
+//    public:
+//        //自定义构造函数
+//        Time(int hour = 0,int min = 0,int sec = 0)
+//        {
+//            cout<<"time"<<endl;
+//            _hour = hour;
+//            _min = min;
+//            _sec = sec;
+//        }
+//        //自定义拷贝构造函数
+//        Time(const Time& t)
+//        {
+//            cout<<"const time"<<endl;
+//            _hour = t._hour;
+//            _min = t._min;
+//            _sec = t._sec;
+//        }
+//    private:
+//        int _hour;
+//        int _min;
+//        int _sec;
+//};
+//class Date
+//{
+//    public:
+//        //自定义构造函数
+//        Date(int year,int month,int day,const Time& t)
+//        {
+//            _year = year;
+//            _month = month;
+//            _day = day;
+//            _t = t;
+//        }
+//  //     Date(int year,int month,int day,const Time& t)
+//  //         :_year(year)
+//  //          ,_month(month)
+//  //          ,_day(day)
+//  //          ,_t(t)
+//  //  {}
+//    private:
+//        int _year;
+//        int _month;
+//        int _day;
+//        Time _t;
+//};
+//
+//int main()
+//{
+//    Time t;
+//    Date(1900,1,1,t);
+//    return 0;
+//
+//}
 
 
 
