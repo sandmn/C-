@@ -1,4 +1,5 @@
 #include<iostream>
+#include<stdlib.h>
 #include<string.h>
 #include<assert.h>
 using namespace std;
@@ -109,9 +110,36 @@ class String
             Expand(n);
         }
 
-        void ReSize(size_t n);
+        //重新设置字符串的实际大小，并初始化
+        void ReSize(size_t n,char ch = '\0')
+        {
+            //如果所要求的大小n小于原来的实际大小，则将原来的实际大小改为n
+            if(n < _size)
+            {
+                _str[n] = '\0';
+                _size = n;
+            }
+            //如果原来的实际大小：
+            else
+            {
+                //如果n小于_capacity,再将从_size到n的字符均初始化为字符ch
+                //如果n大于_capacity，则进行扩容，将之后的字符均初始化为ch
+                if(n > _capacity)
+                {
+                    Expand(n);
+                }
+                //此时的n必小于等于_capacity,将从_size开始的到n的字符全部初始化为字符ch
+                int i = _size;
+                for(;i < n;i++)
+                {
+                    _str[i] = ch;
+                }
+                _str[n] = '\0';
+                _size += n;
+            }
+        }
+
         //实现增删查改
-        
         //增：
         ////尾插一个字符（方法1）
         //void PushBack(char ch)
@@ -389,6 +417,54 @@ class String
             }
         }
 
+        //"=="运算符重载
+        bool operator==(const String& s) const 
+        {
+            const char* str1 = _str;
+            const char* str2 = s._str;
+            while(*str1 != '\0' && *str2 != '\0')
+            {
+                if(*str1 == *str2)
+                {
+                    str1++;
+                    str2++;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            if(*str1 == '\0' && *str2 == '\0')
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        //"<="运算符重载
+        bool operator<=(const String& s) const
+        {
+            return (*this < s) || (*this == s);
+        }
+        //">"运算符重载
+        bool operator>(const String& s) const
+        {
+            return !(*this <= s);
+        }
+        //">="运算符重载
+        bool operator>=(const String& s) const
+        {
+            return !(*this < s);
+        }
+        //"!="运算符重载
+        bool operator!=(const String& s) const
+        {
+            return !(*this == s);
+        }
+
         //析构函数
         ~String()
         {
@@ -400,7 +476,6 @@ class String
                 _capacity = 0;
             }
         }
-
         char* c_str()
         {
             return _str;
@@ -409,7 +484,10 @@ class String
         char* _str;//_str用于保存字符串
         int _size;//_size用于指示字符串实际的字符个数
         int _capacity;//_capacity表示字符串的容量
+    public:
+        static int npos;
 };
+int String::npos = 1;
 
 int main()
 {
@@ -420,11 +498,9 @@ int main()
     String s2(s1);
     cout<<s2.c_str()<<endl;
     String s3 = s1;
+    //s3.Display();
 
-    s1.Insert(0,'a');
-    cout<<s1.c_str()<<endl;
-    s1.Insert(0,"gsj");
-    cout<<s1.c_str()<<endl;
+
     
     ////在字符串s1字后追加一个字符
     //s1.PushBack('q');
@@ -521,14 +597,71 @@ int main()
     //cout<<s1.Find('o')<<endl;
     //cout<<s1.Find('a')<<endl;
 
-    //查看某个子字符串所在的位置下标
-    cout<<s1.Find("he")<<endl;
-    cout<<s1.Find("ll")<<endl;
-    cout<<s1.Find("o")<<endl;
-    cout<<s1.Find("gdf")<<endl;
-    cout<<s1.Find("hdg")<<endl;
+    ////查看某个子字符串所在的位置下标
+    //cout<<s1.Find("he")<<endl;
+    //cout<<s1.Find("ll")<<endl;
+    //cout<<s1.Find("o")<<endl;
+    //cout<<s1.Find("gdf")<<endl;
+    //cout<<s1.Find("hdg")<<endl;
 
+    ////测试各种运算符重载
+    //s2 = "world";
+    //s3 = "hellohsbj";
+    //String s4 = "hello";
+    //String s5 = "adhkf";
+    //cout<<(s1<s2)<<endl;
+    //cout<<(s1<s3)<<endl;
+    //cout<<(s1<s4)<<endl;
+    //cout<<(s1<s5)<<endl;
+    //cout<<(s1==s2)<<endl;
+    //cout<<(s1==s3)<<endl;
+    //cout<<(s1==s4)<<endl;
+    //cout<<(s1==s5)<<endl;
+    //cout<<(s1>s2)<<endl;
+    //cout<<(s1>s3)<<endl;
+    //cout<<(s1>s4)<<endl;
+    //cout<<(s1>s5)<<endl;
+    //cout<<(s1<=s4)<<endl;
+    //cout<<(s1>=s4)<<endl;
+    //cout<<(s1!=s4)<<endl;
 
+    ////测试ReSize
+    //s1.ReSize(3,'q');
+    //cout<<s1.c_str()<<endl;
+    //s2.PushBack('p');
+    //s2.ReSize(8,'a');
+    //cout<<s2.c_str()<<endl;
+    //s3.ReSize(10,'o');
+    //cout<<s3.c_str()<<endl;
+
+    ////测试Reserve
+    //int start1 = clock();
+    //char buf[128];
+    //int n = 20000;
+    //int i = 0;
+    //String s4;
+    //for(i = 0;i < n;i++)
+    //{
+    //    //将整数以10进制的形式转化为字符串格式
+    //    //该函数是在Windows下扩展的，Linux下不能使用
+    //    itoa(i,buf,10);
+    //    s4 += buf;
+    //}
+    //int end1 = clock();
+
+    //int start2 = clock();
+    //String s5;
+    //s2.Reserve(s1.Capacity());
+    //for(i = 0;i < n;i++)
+    //{
+    //    itoa(i,buf,10);
+    //    s5 += buf;
+    //}
+    //int end2 = clock();
+
+    //cout<<end1-start1<<endl;
+    //cout<<end2-start2<<endl;
+    
     return 0;
 }
 
