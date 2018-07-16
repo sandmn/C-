@@ -136,32 +136,51 @@ class String
 
         //增删查改
         //增：
+        //方法1：
+        //void PushBack(const char ch)
+        //{
+        //    //因为要多字符串进行写入，所以要进行写时拷贝
+        //    CopyOnWrite();
+        //    //如果当前字符串的实际大小已达到容量，则在进行插入时就需要扩容
+        //    if(_size == _capacity)
+        //    {
+        //        Expand(_capacity*2);
+        //    }
+        //    //在容量已足够的情况下，直接进行插入元素
+        //    _str[_size++] = ch;
+        //    _str[_size] = '\0';
+        //}
+        //方法2
         void PushBack(const char ch)
         {
-            //因为要多字符串进行写入，所以要进行写时拷贝
+            //首先进行写诗拷贝
             CopyOnWrite();
-            //如果当前字符串的实际大小已达到容量，则在进行插入时就需要扩容
-            if(_size == _capacity)
-            {
-                Expand(_capacity*2);
-            }
-            //在容量已足够的情况下，直接进行插入元素
-            _str[_size++] = ch;
-            _str[_size] = '\0';
+            //然后直接调用Insert进行尾插一个字符
+            Insert(_size,ch);
         }
+
+        //方法1：
+        //void Append(const char* str)
+        //{
+        //    //因为要对字符串进行追加，所以要进行写时拷贝
+        //    CopyOnWrite();
+        //    //如果当前字符串的实际大小已达到容量，此时需要扩容
+        //    size_t len = strlen(str);
+        //    if(_size + len > _capacity)
+        //    {
+        //        Expand(_size + len);
+        //    }
+        //    //在容量已足够的情况下，对字符串进行追加
+        //    strcat(_str + _size,str);
+        //    _size += len;
+        //}
+        //方法2：
         void Append(const char* str)
         {
-            //因为要对字符串进行追加，所以要进行写时拷贝
+            //首先进写实拷贝
             CopyOnWrite();
-            //如果当前字符串的实际大小已达到容量，此时需要扩容
-            size_t len = strlen(str);
-            if(_size + len > _capacity)
-            {
-                Expand(_size + len);
-            }
-            //在容量已足够的情况下，对字符串进行追加
-            strcat(_str + _size,str);
-            _size += len;
+            //然后调用Insert进行尾插一个字符串
+            Insert(_size,str);
         }
         void Insert(size_t pos,char ch)
         {
@@ -185,26 +204,234 @@ class String
             _str[pos] = ch;
             _size++;
         }
-        void Insert(size_t pos,const char* str);
+        void Insert(size_t pos,const char* str)
+        {
+            //首先保证插入的位置正确
+            assert(pos <= _size);
+            //进行写实拷贝
+            CopyOnWrite();
+            size_t len = strlen(str);
+            //如果实际的容量不够，则需要扩容
+            if(_size + len > _capacity)
+            {
+                Expand(_size + len);
+            }
+            //在实际容量已经走的的情况下，进行插入
+            //将pos之后的字符均后移len个位置
+            int end = _size;
+            for(;end >= (int)pos;end--)
+            {
+                _str[end + len] = _str[end];
+            }
+            //然后将str插入进原字符串中
+            strncpy(_str + pos,str,len);
+            //改变_size的值
+            _size += len;
+        }
 
-        void PopBack();
-        void Erase(size_t pos,size_t len);
+        //删：尾删一个字符
+        void PopBack()
+        {
+            //首先判断字符串中是否有元素
+            assert(_size > 0);
+            //进行写实拷贝
+            CopyOnWrite();
+            //将尾字符删除
+            _str[--_size] = '\0';
+        }
+        //在任意位置删除一个长度为len的字符串
+        void Erase(size_t pos,size_t len)
+        {
+            //首先判断字符串中是否有元素以及删除的位置是否正确
+            assert(_size > 0 && pos < _size);
+            //进行写实拷贝
+            CopyOnWrite();
+            //如果要删除的字符串大于等于pos之后的字符串，则将后序字符串全部删除
+            size_t to_delete = _size - pos;
+            if(to_delete <= len)
+            {
+                _str[pos] = '\0';
+                _size = pos;
+            }
+            //如果要删除的字符串小于后序的字符串
+            else
+            {
+                //将要删除字符串之后的字符串赋值到pos处
+                strcpy(_str + pos,_str + pos + len);
+                _size = _size - len;
+            }
+        }
 
         //运算符重载
         //"+="运算符重载:s1 += "hello"
-        String& operator+=(const char* str);
-        String& operator+=(const String& s);
-        String operator+(const char* str);
-        String operator+(const String& s);
-        bool operator<(const String& s);
-        bool operator==(const String& s);
-        
-        size_t Size();
-        size_t Capacity();
-        size_t Empty();
+        String& operator+=(const char* str)
+        {
+            //首先进写实拷贝
+            CopyOnWrite();
+            //然后进行尾插一个字符串
+            Append(str);
+            return *this;
+        }
+        //void operator+=(const char* str)
+        //{
+        //    CopyOnWrite();
+        //    Append(str);
+        //}
+        String& operator+=(const String& s)
+        {
+            //首先进行写实拷贝
+            CopyOnWrite();
+            //然后尾插追加一个字符串
+            Append(s._str);
+            return *this;
+        }
+        //void operator+=(const String& s)
+        //{
+        //    CopyOnWrite();
+        //    Append(s._str);
+        //}
+        //s1 + "hello"
+        String operator+(const char* str)
+        {
+            //首先进行写实拷贝
+           // CopyOnWrite();
+            //创建临时变量tmp拷贝构造this
+            String tmp(*this);
+            ////再次进行写实拷贝
+            //CopyOnWrite();
+            //对tmp调用"+="
+            tmp += str; //在+=中会再次自动调用写实拷贝
+            return tmp;
+        }
+        String operator+(const String& s)
+        {
+            String tmp(*this);
+            tmp += s._str;
+            return tmp;
+        }
 
-        size_t Find(const char ch);
-        size_t Find(const char* str);
+        //逻辑运算符重载
+        //s1 < s2
+        bool operator<(const String& s)
+        {
+            char* str1 = this->_str;
+            char* str2 = s._str;
+            while(str1 != '\0' && str2 != '\0')
+            {
+                if(*str1 == *str2)
+                {
+                    str1++;
+                    str2++;
+                }
+                else if(*str1 < *str2)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            if(*str1 == '\0' && *str2 != '\0')
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        bool operator==(const String& s)
+        {
+            char* str1 = this->_str;
+            char* str2 = s._str;
+            while(*str1 != '\0' && *str2 != '\0')
+            {
+                if(*str1 == *str2)
+                {
+                    str1++;
+                    str2++;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            if(*str1 == '\0' && *str2 == '\0')
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        bool operator<=(const String& s)
+        {
+            return (*this < s)||(*this == s);
+        }
+        bool operator>(const String& s)
+        {
+            return !(*this <= s);
+        }
+        bool operator>=(const String& s)
+        {
+            return (*this > s)||(*this == s);
+        }
+        bool operator!=(const String& s)
+        {
+            return !(*this == s);
+        }
+        
+        size_t Size()
+        {
+            return _size;
+        }
+        size_t Capacity()
+        {
+            return _capacity;
+        }
+        size_t Empty()
+        {
+            return _size == 0;
+        }
+
+        //查找字符所在的下标位置
+        size_t Find(const char ch) const
+        {
+            int i = 0;
+            for(;i < _size;i++)
+            {
+                if(_str[i] == ch)
+                {
+                    return i;
+                }
+            }
+            return -1;
+        }
+        size_t Find(const char* str) const
+        {
+            char* src = _str;
+            while(*src != '\0')
+            {
+                char* src_tmp = src;
+                const char* sub = str;
+                while(*src_tmp == *sub && *sub != '\0')
+                {
+                    src_tmp++;
+                    sub++;
+                }
+                if(*sub == 0)
+                {
+                    return src - _str;
+                }
+                if(*src_tmp != *sub)
+                {
+                    src++;
+                }
+            }
+            return -1;
+        }
         
 
         //输出C风格的字符串
@@ -218,7 +445,10 @@ class String
         int* _pcount;
         size_t _size;
         size_t _capacity;
+    public:
+        static int npos;
 };
+int String::npos = -1;//只能在类内声明，类外定义
 
 int main()
 {
@@ -263,26 +493,195 @@ int main()
     //cout<<s2.c_str()<<endl;
     //cout<<s3.c_str()<<endl;
 
-    //测试Insert
-    s1.Insert(0,'a');
-    s1.Insert(3,'b');
-    s1.Insert(7,'c');
-    //s1.Insert(10,'d');
-    s2.Insert(0,'w');
-    s2.Insert(2,'x');
-    s2.Insert(7,'y');
-    //s2.Insert(11,'z');
-    s3.Insert(0,'o');
-    s3.Insert(1,'p');
-    s3.Insert(7,'q');
-    //s3.Insert(12,'r');
-    cout<<s1.c_str()<<endl;
-    cout<<s2.c_str()<<endl;
-    cout<<s3.c_str()<<endl;
+    ////测试Insert
+    //s1.Insert(0,'a');
+    //s1.Insert(3,'b');
+    //s1.Insert(7,'c');
+    ////s1.Insert(10,'d');
+    //s2.Insert(0,'w');
+    //s2.Insert(2,'x');
+    //s2.Insert(7,'y');
+    ////s2.Insert(11,'z');
+    //s3.Insert(0,'o');
+    //s3.Insert(1,'p');
+    //s3.Insert(7,'q');
+    ////s3.Insert(12,'r');
+    //cout<<s1.c_str()<<endl;
+    //cout<<s2.c_str()<<endl;
+    //cout<<s3.c_str()<<endl;
 
+    ////测试Insert一个字符串
+    //s1.Insert(0," world");
+    //cout<<s1.c_str()<<endl;
+    //s1.Insert(3,"bkjsc");
+    //cout<<s1.c_str()<<endl;
+    ////s1.Insert(20," siu");
+    ////cout<<s1.c_str()<<endl;
 
+    //s2.Insert(0," world");
+    //cout<<s2.c_str()<<endl;
+    //s2.Insert(3,"bkjsc");
+    //cout<<s2.c_str()<<endl;
+    ////s2.Insert(20," siu");
+    ////cout<<s2.c_str()<<endl;
 
+    //s3.Insert(0," world");
+    //cout<<s3.c_str()<<endl;
+    //s3.Insert(3,"bkjsc");
+    //cout<<s3.c_str()<<endl;
+    ////s3.Insert(20," siu");
+    ////cout<<s3.c_str()<<endl;
 
+    //测试PopBack
+    //s1.PopBack();
+    //cout<<s1.c_str()<<endl;
+    //s1.PopBack();
+    //cout<<s1.c_str()<<endl;
+    //s2.PopBack();
+    //cout<<s2.c_str()<<endl;
+    //s2.PopBack();
+    //cout<<s2.c_str()<<endl;
+    //s3.PopBack();
+    //cout<<s3.c_str()<<endl;
+    //s3.PopBack();
+    //cout<<s3.c_str()<<endl;
 
+    //测试任意位置删除指定长度的字符串
+    //s1.Erase(0,1);
+    //cout<<s1.c_str()<<endl;
+    //s1.Erase(0,4);
+    //cout<<s1.c_str()<<endl;
+    //s1.Append("hello");
+    //cout<<s1.c_str()<<endl;
+    //s1.Erase(0,10);
+    //cout<<s1.c_str()<<endl;
+    ////s1.Erase(0,3);
+    ////cout<<s1.c_str()<<endl;
+
+    //s2.Erase(0,1);
+    //cout<<s2.c_str()<<endl;
+    //s2.Erase(0,4);
+    //cout<<s2.c_str()<<endl;
+    //s2.Append("hello");
+    //cout<<s2.c_str()<<endl;
+    //s2.Erase(0,10);
+    //cout<<s2.c_str()<<endl;
+    ////s2.Erase(0,3);
+    ////cout<<s2.c_str()<<endl;
+
+    //s3.Erase(0,1);
+    //cout<<s3.c_str()<<endl;
+    //s3.Erase(0,4);
+    //cout<<s3.c_str()<<endl;
+    //s3.Append("hello");
+    //cout<<s3.c_str()<<endl;
+    //s3.Erase(0,10);
+    //cout<<s3.c_str()<<endl;
+    ////s3.Erase(0,3);
+    ////cout<<s3.c_str()<<endl;
+
+    //测试"+="运算符重载
+    //s1 += " world";
+    //cout<<s1.c_str()<<endl;
+    //s2 += " world";
+    //cout<<s2.c_str()<<endl;
+    //s3 += " world";
+    //cout<<s3.c_str()<<endl;
+
+    //String s4 = " world";
+    //s1 += s4;
+    //cout<<s1.c_str()<<endl;
+    //s2 += s4;
+    //cout<<s2.c_str()<<endl;
+    //s3 += s4;
+    //cout<<s3.c_str()<<endl;
+
+    //测试"+"运算符重载
+    //String s5 = s1 + " world";
+    //cout<<s5.c_str()<<endl;
+    //String s6 = s2 + " world";
+    //cout<<s6.c_str()<<endl;
+    //String s7 = s3 + " world";
+    //cout<<s7.c_str()<<endl;
+
+    //String s8 = " world";
+
+    //String s9 = s1 + s8;
+    //cout<<s9.c_str()<<endl;
+    //String s10 = s2 + s8;
+    //cout<<s10.c_str()<<endl;
+    //String s11 = s3 + s8;
+    //cout<<s11.c_str()<<endl;
+    
+    //测试逻辑运算符
+    String s4 = "world";
+    String s5 = "adhjssnk";
+    String s6 = "hellosjj";
+    String s7 = "hello";
+    String s8 = "hell";
+    //cout<<(s1<s4)<<endl;
+    //cout<<(s1<s5)<<endl;
+    //cout<<(s1<s6)<<endl;
+    //cout<<(s1<s7)<<endl;
+    //cout<<(s1<s8)<<endl;
+    //cout<<(s2<s4)<<endl;
+    //cout<<(s2<s5)<<endl;
+    //cout<<(s2<s6)<<endl;
+    //cout<<(s2<s7)<<endl;
+    //cout<<(s2<s8)<<endl;
+    //cout<<(s3<s4)<<endl;
+    //cout<<(s3<s5)<<endl;
+    //cout<<(s3<s6)<<endl;
+    //cout<<(s3<s7)<<endl;
+    //cout<<(s3<s8)<<endl;
+
+    //cout<<(s1 == s4)<<endl;
+    //cout<<(s1 == s5)<<endl;
+    //cout<<(s1 == s6)<<endl;
+    //cout<<(s1 == s7)<<endl;
+    //cout<<(s1 == s8)<<endl;
+    //cout<<(s2 == s4)<<endl;
+    //cout<<(s2 == s5)<<endl;
+    //cout<<(s2 == s6)<<endl;
+    //cout<<(s2 == s7)<<endl;
+    //cout<<(s2 == s8)<<endl;
+    //cout<<(s3 == s4)<<endl;
+    //cout<<(s3 == s5)<<endl;
+    //cout<<(s3 == s6)<<endl;
+    //cout<<(s3 == s7)<<endl;
+    //cout<<(s3 == s8)<<endl;
+
+    //cout<<(s1 <= s4)<<endl;
+    //cout<<(s2 <= s4)<<endl;
+    //cout<<(s3 <= s4)<<endl;
+
+    //测试Find函数
+    cout<<s1.Find('h')<<endl;
+    cout<<s1.Find('l')<<endl;
+    cout<<s1.Find('o')<<endl;
+    cout<<s1.Find('s')<<endl;
+
+    cout<<s2.Find('h')<<endl;
+    cout<<s2.Find('l')<<endl;
+    cout<<s2.Find('o')<<endl;
+    cout<<s2.Find('s')<<endl;
+    cout<<s3.Find('h')<<endl;
+    cout<<s3.Find('l')<<endl;
+    cout<<s3.Find('o')<<endl;
+    cout<<s3.Find('s')<<endl;
+
+    //hello
+    cout<<s1.Find("h")<<endl;
+    cout<<s1.Find("ll")<<endl;
+    cout<<s1.Find("o")<<endl;
+    cout<<s1.Find("gsj")<<endl;
+    cout<<s2.Find("h")<<endl;
+    cout<<s2.Find("ll")<<endl;
+    cout<<s2.Find("o")<<endl;
+    cout<<s2.Find("gsj")<<endl;
+    cout<<s3.Find("h")<<endl;
+    cout<<s3.Find("ll")<<endl;
+    cout<<s3.Find("o")<<endl;
+    cout<<s3.Find("gsj")<<endl;
     return 0;
 }
