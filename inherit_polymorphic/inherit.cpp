@@ -4,124 +4,279 @@
 using namespace std;
 
 
-
-
-
-//继承和转换：赋值兼容规则
-class Person
-{
-    public:
-        //构造函数
-        //C风格字符串在赋值给string字符串时，会先生成string类型的临时变量
-        //name实际是string类型的临时变量的引用,临时变量具有常属性，所以必须加const
-        //此时传参时，即可以传递string类的对象，也可以传递C风格的字符串
-        Person(const string& name = "yanxuechun")
-            :_name(name)//此处调用string类的拷贝构造函数
-        {
-        }
-
-        //如果参数为C风格字符串的指针，则传参时只能传递C风格的字符串
-        //而不能是string类的对象
-        //Person(const char* _str = "yanxuechun")
-        //    :_name(_str)//此处调用string类的构造函数
-        //{}
-        
-        //拷贝构造函数
-        Person(const Person& p)
-            :_name(p._name)//此处调用string类的拷贝构造函数
-        {
-        }
-        //赋值运算符重载
-        Person& operator=(const Person& p)
-        {
-            if(this != &p)
-            {
-                _name = p._name;//此处调用string类的赋值运算符重载函数
-                return *this;
-            }
-        }
-        //析构函数
-        ~Person()
-        {
-        }
-        //公有成员函数
-        void Display()
-        {
-            cout<<_name<<endl;
-        }
-    private:
-        string _name;//父类有一个string类型的成员变量
-};
-
-//公有继承
-class Student : public Person
-{
-    public:
-        //对父类的Display函数进行覆盖
-        void Display()
-        {
-            cout<<_num<<endl;
-        }
-        int _num;
-};
-
-int main()
-{
-    Person p;
-    Student s;
-
-    //子类对象可以赋值给父类对象
-    //p = s;
-    //p.Display();
-    //s.Display();
-    //s.Person::Display();
-
-    ////父类对象的指针或者引用可以指向子类对象
-    //Person* p1 = &s;
-    //p1->Display();//根据类型进行调用
-    //Person& p2 = s;
-    //p2.Display();//根据类型进行函数调用
-
-    ////父类对象不能赋值给子类对象
-    //s = p;
-
-    ////子类对象的指针或者引用不可以指向父类对象
-    //Student* s1 = &p;
-    //Student& s2 = p;
-
-//有问题
-
-//    //子类对象的指针或者引用可以指向父类对象（通过强制类型转换）
-//    Student* s1 = (Student*)&p;
-//    s1->Display();//通过类型调用函数
-//    Student& s2 = (Student&)p;
-//    s2.Display();//通过类型调用函数
+////子类中的六大默认成员函数：如果不显示写出，则系统会默认合成这六个成员函数
+////注意：在子类中也会继承父类的六个默认成员函数
+//class Person
+//{
+//    public:
+//        //构造函数
+//        Person(const string& name = "yanxuechun")
+//            :_name(name)
+//            {
+//                cout<<"Person()"<<endl;
+//            }
+//        //拷贝构造函数
+//        Person(const Person& p)
+//            :_name(p._name)
+//        {
+//            cout<<"Person(const Person& p)"<<endl;
+//        }
+//        //赋值运算符重载
+//        Person& operator=(const Person& p)
+//        {
+//            cout<<"operator="<<endl;
+//            if(this != &p)
+//            {
+//                _name = p._name;
+//            }
+//            return *this;
+//        }
+//        //析构函数
+//        ~Person()
+//        {
+//            cout<<"~Person()"<<endl;
+//        }
+//    protected:
+//        string _name;
+//};
+//class Student : public Person
+//{
+//    public:
+//        //构造函数
+//        Student(const string& name = "hujiangqi",int num = 1)
+//            :Person(name)//注意：此处不能写为：_name(name)
+//            ,_num(num)
+//    {
+//        cout<<"Student()"<<endl;
+//    }
+//        //拷贝构造函数
+//        Student(const Student& s)
+//            :Person(s._name)//切片：将子类对象赋值给父类对象
+//            ,_num(s._num)
+//    {
+//        cout<<"Student(const Student&)"<<endl;
+//    }
+//        //赋值运算符重载
+//        Student& operator=(const Student& s)
+//        {
+//            cout<<"operator=(const Student&)"<<endl;
+//            if(this != &s)
+//            {
+//                //方式一：调用父类的赋值运算符重载函数对父类成员进行赋值
+//                Person::operator=(s);
+//                //调用子类的赋值运算符重载函数对子类成员进行赋值
+//                _num = s._num;
+//                //方式二：手工赋值
+//               // _name = s._name;
+//               // _num = s._num;
+//            }
+//            return *this;
+//        }
+//        //析构函数：先析构子类，在析构父类
+//        //子类会隐藏父类的析构函数
+//        //析构子类时，会先析构子类，然后自动调用父类的析构函数析构父类
+//        ~Student()
+//        {
+//            cout<<"~Student()"<<endl;
+//        }
+//    private:
+//        int _num;
+//};
 //
-//    //子类指针或引用指向父类时：即将父类的指针或者引用赋值给子类指针或引用
-//    //1. 如果父类指针或引用指向父类，则子类指针对其特有的成员进行操作时，会中断引发异常
-//    s1->_num = 10;
-//    cout<<s1->_num<<endl;
-//    s2._num = 20;
-//    cout<<s2._num<<endl;
-
-    ////2. 如果父类指针或引用指向子类，则子类指针对其特有的成员进行操作时，不会引发异常
-    //Person* p1 = &s;
-    //Person& p2 = s;
-    //Student* s3 = (Student*)p1;
-    //Student& s4 = (Student&)p2;
-    //s3->_num = 1;
-    ////s4._num = 2;
-    //cout<<s3->_num<<endl;
-    //cout<<s4._num<<endl;
+//int main()
+//{
+//    //构造函数
+//    Student s1;
+//    //拷贝构造函数
+//    Student s2(s1);
+//    //赋值运算符重载
+//    s2 = s1;
+//    return 0;
+//}
 
 
 
+////重定义和隐藏:在父类和子类中：
+//成员变量名相同，构成隐藏
+//成员函数名相同，参数任意，也构成隐藏或重定义
+//注意与重载的区别:重载是在不同作用域范围内，函数名相同，参数列表不同，返回值任意
+//class Person
+//{
+//    public:
+//        //构造函数
+//        Person(const string& name = "yanxuechun",const int num = 1)
+//            :_name(name)
+//             ,_num(num)
+//    {
+//        cout<<"Person"<<endl;
+//    }
+//        //拷贝构造函数
+//        Person(const Person& p)
+//            :_name(p._name)
+//             ,_num(p._num)
+//    {
+//        cout<<"Person(const Person& )"<<endl;
+//    }
+//        //赋值运算符重载
+//        Person& operator=(const Person& p)
+//        {
+//            cout<<"operator="<<endl;
+//            if(this != &p)
+//            {
+//                _name = p._name;
+//                _num = p._num;
+//            }
+//            return *this;
+//        }
+//        //析构函数
+//        ~Person()
+//        {
+//            cout<<"~Person"<<endl;
+//        }
+//        void Display()
+//        {
+//            cout<<"_name:"<<_name<<endl;
+//            cout<<"_id:"<<_num<<endl;
+//        }
+//    protected:
+//        string _name;//姓名
+//        int _num;//身份证号
+//};
+//class Student : public Person
+//{
+//    public:
+//        Student(const string name = "yanxuechun",int id = 0,int num = 1)
+//            :Person(name,id)//从父类继承的成员由父类的调用父类的构造函数进行初始化
+//             ,_num(num)
+//    {
+//        cout<<"Student"<<endl;
+//    }
+//        //在子类中访问父类中被隐藏的成员时，要要加上域作用限定符
+//        void Display()
+//        {
+//            cout<<"_name:"<<_name<<endl;
+//            cout<<"_id:"<<Person::_num<<endl;
+//            cout<<"_num:"<<_num<<endl;
+//        }
+//    private:
+//        int _num;//学生的学号
+//};
+//int main()
+//{
+//    Student s("hujiangqii",1,2);
+//    s.Display();
+//    s.Person::Display();
+//    return 0;
+//}
 
 
 
-   // string s("yanxuechun");
-   // Person p("yanxuechun");
-}
+////继承和转换：赋值兼容规则
+//class Person
+//{
+//    public:
+//        //构造函数
+//        //C风格字符串在赋值给string字符串时，会先生成string类型的临时变量
+//        //name实际是string类型的临时变量的引用,临时变量具有常属性，所以必须加const
+//        //此时传参时，即可以传递string类的对象，也可以传递C风格的字符串
+//        Person(const string& name = "yanxuechun")
+//            :_name(name)//此处调用string类的拷贝构造函数
+//        {
+//        }
+//        //如果参数为C风格字符串的指针，则传参时只能传递C风格的字符串
+//        //而不能是string类的对象
+//        //Person(const char* _str = "yanxuechun")
+//        //    :_name(_str)//此处调用string类的构造函数
+//        //{}
+//        
+//        //拷贝构造函数
+//        Person(const Person& p)
+//            :_name(p._name)//此处调用string类的拷贝构造函数
+//        {
+//        }
+//        //赋值运算符重载
+//        Person& operator=(const Person& p)
+//        {
+//            if(this != &p)
+//            {
+//                _name = p._name;//此处调用string类的赋值运算符重载函数
+//                return *this;
+//            }
+//        }
+//        //析构函数
+//        ~Person()
+//        {
+//        }
+//        //公有成员函数
+//        void Display()
+//        {
+//            cout<<_name<<endl;
+//        }
+//    private:
+//        string _name;//父类有一个string类型的成员变量
+//};
+////公有继承
+//class Student : public Person
+//{
+//    public:
+//        //对父类的Display函数进行覆盖
+//        void Display()
+//        {
+//            cout<<_num<<endl;
+//        }
+//        int _num;
+//};
+//int main()
+//{
+//    Person p;
+//    Student s;
+//
+//    //子类对象可以赋值给父类对象
+//    //p = s;
+//    //p.Display();
+//    //s.Display();
+//    //s.Person::Display();
+//
+//    ////父类对象的指针或者引用可以指向子类对象
+//    //Person* p1 = &s;
+//    //p1->Display();//根据类型进行调用
+//    //Person& p2 = s;
+//    //p2.Display();//根据类型进行函数调用
+//
+//    ////父类对象不能赋值给子类对象
+//    //s = p;
+//
+//    ////子类对象的指针或者引用不可以指向父类对象
+//    //Student* s1 = &p;
+//    //Student& s2 = p;
+//
+////有问题
+//
+////    //子类对象的指针或者引用可以指向父类对象（通过强制类型转换）
+////    Student* s1 = (Student*)&p;
+////    s1->Display();//通过类型调用函数
+////    Student& s2 = (Student&)p;
+////    s2.Display();//通过类型调用函数
+////
+////    //子类指针或引用指向父类时：即将父类的指针或者引用赋值给子类指针或引用
+////    //1. 如果父类指针或引用指向父类，则子类指针对其特有的成员进行操作时，会中断引发异常
+////    s1->_num = 10;
+////    cout<<s1->_num<<endl;
+////    s2._num = 20;
+////    cout<<s2._num<<endl;
+//
+//    ////2. 如果父类指针或引用指向子类，则子类指针对其特有的成员进行操作时，不会引发异常
+//    //Person* p1 = &s;
+//    //Person& p2 = s;
+//    //Student* s3 = (Student*)p1;
+//    //Student& s4 = (Student&)p2;
+//    //s3->_num = 1;
+//    ////s4._num = 2;
+//    //cout<<s3->_num<<endl;
+//
+//   // string s("yanxuechun");
+//   // Person p("yanxuechun");
+//}
 
 
 
