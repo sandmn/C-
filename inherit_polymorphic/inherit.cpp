@@ -1,108 +1,230 @@
 #include<iostream>
 #include<stdio.h>
+#include<string>
 using namespace std;
 
+
+
+
+
+//继承和转换：赋值兼容规则
 class Person
 {
     public:
+        //构造函数
+        //C风格字符串在赋值给string字符串时，会先生成string类型的临时变量
+        //name实际是string类型的临时变量的引用,临时变量具有常属性，所以必须加const
+        //此时传参时，即可以传递string类的对象，也可以传递C风格的字符串
+        Person(const string& name = "yanxuechun")
+            :_name(name)//此处调用string类的拷贝构造函数
+        {
+        }
+
+        //如果参数为C风格字符串的指针，则传参时只能传递C风格的字符串
+        //而不能是string类的对象
+        //Person(const char* _str = "yanxuechun")
+        //    :_name(_str)//此处调用string类的构造函数
+        //{}
+        
+        //拷贝构造函数
+        Person(const Person& p)
+            :_name(p._name)//此处调用string类的拷贝构造函数
+        {
+        }
+        //赋值运算符重载
+        Person& operator=(const Person& p)
+        {
+            if(this != &p)
+            {
+                _name = p._name;//此处调用string类的赋值运算符重载函数
+                return *this;
+            }
+        }
+        //析构函数
+        ~Person()
+        {
+        }
+        //公有成员函数
         void Display()
         {
-            cout<<"haha"<<endl;
+            cout<<_name<<endl;
         }
-        int _n1;
-    protected:
-        int _n2;
     private:
-        int _n3;
+        string _name;//父类有一个string类型的成员变量
 };
 
-//公有继承：除私有成员不可见（存在但不能访问）外，其余成员的属性不变
-//          父类中的公有成员在子类中还是公有成员(公有成员在类内外均可访问)
-//          父类中的受保护成员在子类中还是受保护成员（受保护成员只在子类/本类中可访问，类外不能访问）
-class Student1:public Person
+//公有继承
+class Student : public Person
 {
     public:
+        //对父类的Display函数进行覆盖
         void Display()
         {
-            _n1 = 10;
-            _n2 = 20;
-           // _n3 = 30;
-            _s = 40;
-            cout<<_n1<<endl;
-            cout<<_n2<<endl;
-           // cout<<_n3<<endl;
-            cout<<_s<<endl;
+            cout<<_num<<endl;
         }
-    int _s;
-};
-
-//保护继承:除父类的私有成员外父类的其余成员均变为受保护成员（类和子类中可以访问，类外不可以访问）
-class Student2:protected Person
-{
-    public:
-        void Display()
-        {
-            _n1 = 10;
-            _n2 = 20;
-            //_n3 = 30;
-            cout<<_n1<<endl;
-            cout<<_n2<<endl;
-            //cout<<_n3<<endl;
-        }
-};
-
-//私有继承
-class Student3 : private Person
-{
-    public:
-        void Display()
-        {
-            _n1 = 10;
-            _n2 = 20;
-            //_n3 = 30;
-            cout<<_n1<<endl;
-            cout<<_n2<<endl;
-            //cout<<_n3<<endl;
-        }
-
+        int _num;
 };
 
 int main()
 {
-    //Person p;
-    //cout<<sizeof(p)<<endl;
-    
-    //Student1 s1;
-    //cout<<sizeof(s1)<<endl;
-    //s1.Display();
-    //s1._n1 = 1;
-    ////s1._n2 = 2;
-    ////s1._n3 = 3;
-    //cout<<s1._n1<<endl;
-    ////cout<<s1._n2<<endl;
-    ////cout<<s1._n3<<endl;
+    Person p;
+    Student s;
 
-    //Student2 s2;
-    //cout<<sizeof(s2)<<endl;
-   // s2.Display();
-   // s2._n1 = 1;
-   // s2._n2 = 2;
-   //// s2._n3 = 3;
-   // cout<<_s2._n1<<endl;
-   // cout<<_s2._n2<<endl;
-   //// cout<<_s2._n3<<endl;
+    //子类对象可以赋值给父类对象
+    //p = s;
+    //p.Display();
+    //s.Display();
+    //s.Person::Display();
 
-    Student3 s3;
-    cout<<sizeof(s3)<<endl;
-    s3.Display();
-    //s3._n1 = 1;
-    //s3._n2 = 2;
-   //// s2._n3 = 3;
-    //cout<<_s3._n1<<endl;
-    //cout<<_s3._n2<<endl;
-   //// cout<<_s2._n3<<endl;
-    return 0;
+    ////父类对象的指针或者引用可以指向子类对象
+    //Person* p1 = &s;
+    //p1->Display();//根据类型进行调用
+    //Person& p2 = s;
+    //p2.Display();//根据类型进行函数调用
+
+    ////父类对象不能赋值给子类对象
+    //s = p;
+
+    ////子类对象的指针或者引用不可以指向父类对象
+    //Student* s1 = &p;
+    //Student& s2 = p;
+
+//有问题
+
+//    //子类对象的指针或者引用可以指向父类对象（通过强制类型转换）
+//    Student* s1 = (Student*)&p;
+//    s1->Display();//通过类型调用函数
+//    Student& s2 = (Student&)p;
+//    s2.Display();//通过类型调用函数
+//
+//    //子类指针或引用指向父类时：即将父类的指针或者引用赋值给子类指针或引用
+//    //1. 如果父类指针或引用指向父类，则子类指针对其特有的成员进行操作时，会中断引发异常
+//    s1->_num = 10;
+//    cout<<s1->_num<<endl;
+//    s2._num = 20;
+//    cout<<s2._num<<endl;
+
+    ////2. 如果父类指针或引用指向子类，则子类指针对其特有的成员进行操作时，不会引发异常
+    //Person* p1 = &s;
+    //Person& p2 = s;
+    //Student* s3 = (Student*)p1;
+    //Student& s4 = (Student&)p2;
+    //s3->_num = 1;
+    ////s4._num = 2;
+    //cout<<s3->_num<<endl;
+    //cout<<s4._num<<endl;
+
+
+
+
+
+
+   // string s("yanxuechun");
+   // Person p("yanxuechun");
 }
+
+
+
+
+
+////验证成员的访问限定符与继承关系
+//class Person
+//{
+//    public:
+//        void Display()
+//        {
+//            cout<<"haha"<<endl;
+//        }
+//        int _n1;
+//    protected:
+//        int _n2;
+//    private:
+//        int _n3;
+//};
+////公有继承：除私有成员不可见（存在但不能访问）外，其余成员的属性不变
+////          父类中的公有成员在子类中还是公有成员(公有成员在类内外均可访问)
+////          父类中的受保护成员在子类中还是受保护成员（受保护成员只在子类/本类中可访问，类外不能访问）
+//class Student1:public Person
+//{
+//    public:
+//        void Display()
+//        {
+//            _n1 = 10;
+//            _n2 = 20;
+//           // _n3 = 30;
+//            _s = 40;
+//            cout<<_n1<<endl;
+//            cout<<_n2<<endl;
+//           // cout<<_n3<<endl;
+//            cout<<_s<<endl;
+//        }
+//    int _s;
+//};
+////保护继承:除父类的私有成员外父类的其余成员均变为受保护成员（类和子类中可以访问，类外不可以访问）
+//class Student2:protected Person
+//{
+//    public:
+//        void Display()
+//        {
+//            _n1 = 10;
+//            _n2 = 20;
+//            //_n3 = 30;
+//            cout<<_n1<<endl;
+//            cout<<_n2<<endl;
+//            //cout<<_n3<<endl;
+//        }
+//};
+////私有继承:除父类中的私有成员外，其余成员在子类中均为私有成员，只在本类中可以访问，在子类中和类外均不能访问
+//class Student3 : private Person
+//{
+//    public:
+//        void Display()
+//        {
+//            _n1 = 10;
+//            _n2 = 20;
+//            //_n3 = 30;
+//            cout<<_n1<<endl;
+//            cout<<_n2<<endl;
+//            //cout<<_n3<<endl;
+//        }
+//
+//};
+//int main()
+//{
+//    //Person p;
+//    //cout<<sizeof(p)<<endl;
+//    
+//    //Student1 s1;
+//    //cout<<sizeof(s1)<<endl;
+//    //s1.Display();
+//    //s1._n1 = 1;
+//    ////s1._n2 = 2;
+//    ////s1._n3 = 3;
+//    //cout<<s1._n1<<endl;
+//    ////cout<<s1._n2<<endl;
+//    ////cout<<s1._n3<<endl;
+//
+//    //Student2 s2;
+//    //cout<<sizeof(s2)<<endl;
+//   // s2.Display();
+//   // s2._n1 = 1;
+//   // s2._n2 = 2;
+//   //// s2._n3 = 3;
+//   // cout<<_s2._n1<<endl;
+//   // cout<<_s2._n2<<endl;
+//   //// cout<<_s2._n3<<endl;
+//
+//    Student3 s3;
+//    cout<<sizeof(s3)<<endl;
+//    s3.Display();
+//    //s3._n1 = 1;
+//    //s3._n2 = 2;
+//   //// s2._n3 = 3;
+//    //cout<<_s3._n1<<endl;
+//    //cout<<_s3._n2<<endl;
+//   //// cout<<_s2._n3<<endl;
+//    return 0;
+//}
 
 
 
