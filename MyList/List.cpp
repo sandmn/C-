@@ -1,4 +1,5 @@
 #include<iostream>
+#include<list>
 using namespace std;
 //实现双向，循环带头节点的链表
 
@@ -9,6 +10,12 @@ typedef struct DataType
     int a2;
 }Type;
 
+//对自定义类型的<<运算符进行重载
+ostream& operator<<(ostream& out,Type& d)
+{
+    out<<"("<<d.a1<<","<<d.a2<<") ";
+    return out;
+}
 
 //链表节点的定义
 template<class T>
@@ -25,6 +32,74 @@ struct ListNode
         prev = NULL;
     }
 };
+
+//定义一个const类型的迭代器
+template<class T>
+struct Const_ListIterator
+{
+    typedef ListNode<T> Node;
+    //定义该类型的构造函数
+    Const_ListIterator(Node* node)
+        :_Node(node)
+    {
+    }
+    //该类型的拷贝和赋值都是浅拷贝，所以直接使用默认的成员函数即可
+    //在该类型中，没有需要释放的空间，所以使用默认的析构函数即可
+    
+    //对于const类型的对象，返回的是const类型的迭代器
+    //在容器类型中调用的是const类型的Begin，End函数，然后返回一个迭代器
+    //但是此时仍然可以通过迭代器来改变对象的值，没有达到const迭代器的效果
+    //所以为实现const迭代器的效果，需要在解引用迭代器时，不能改变对象的值
+    //也就是说对于const类型的迭代器，需要重新编写解引用函数,所以可以直接在定义一个const类型的迭代器
+    //来实现迭代器的基本操作
+    
+    //因为对于const类型的迭代器，不能改变对象的值
+    //因为迭代器的返回值就是对象的值，所以只需要将迭代器的返回值设置为const即可
+    //注意，不能将迭代器设置为const类型，如果设置了，迭代器的指向就不能改变了
+    ////对于const类型的对象，返回const类型的迭代器
+
+    //对const类型的迭代器进行*运算符重载
+    const T& operator*()
+    {
+        return _Node->data;
+    }
+
+    //同理对const类型的->进行运算符重载
+    const T* operator->()
+    {
+        return &(_Node->data);
+    }
+    //前置++运算符重载
+    Const_ListIterator& operator++()
+    {
+        _Node = _Node->next;
+        return *this;
+    }
+    //后置++运算符重载
+    Const_ListIterator operator++(int)
+    {
+        //首先将为改变之前的迭代器拷贝构造一份
+        Const_ListIterator tmp(*this);
+        //然后改变迭代器中的内容
+        _Node = _Node->next;
+        //最后返回改变之前的迭代器
+        return tmp;
+    }
+    //==运算符重载
+    bool operator==(const Const_ListIterator& con)
+    {
+        return _Node == con._Node;
+    }
+    //!=运算符重载
+    bool operator!= (const Const_ListIterator&  con)
+    {
+        return _Node != con._Node;
+    }
+    //因为迭代器是对结点指针的封装，所以该类型中有一个节点的指针类型变量
+    private:
+        Node* _Node;
+};
+
 
 //定义一个迭代器类型
 template<class T>
@@ -64,6 +139,7 @@ struct ListIterator
     {
         return _Node->data;
     }
+
     //->运算符重载
     //针对于结点的数据域是自定义类型的情形
     T* operator->()
@@ -102,13 +178,26 @@ class List
     typedef ListNode<T> Node;
     public:
     typedef ListIterator<T> Iterator;
+    typedef Const_ListIterator<T> Const_Iterator;
         Iterator Begin()
         {
             return Iterator(_head->next);
         }
+        //返回const类型的迭代器
+        //与普通类型构成函数重载
+        Const_Iterator Begin() const
+        {
+            return Const_Iterator(_head->next);
+        }
         Iterator End()
         {
             return Iterator(_head);
+        }
+        //返回const类型的迭代器
+        //与普通类型构成函数重载
+        Const_Iterator End() const
+        {
+            return Const_Iterator(_head);
         }
         //在构造函数中利用结点的匿名构造函数创建一个头结点
         List()
@@ -187,24 +276,43 @@ class List
     private:
         Node* _head;
 };
-template<class T>
-void Print1(List<T>& l)
+
+//基本类型：打印非const对象的数据,利用容器来实现
+template<class Container>
+void Basic_Print(Container& con)
 {
-    class List<T>::Iterator it = l.Begin();
-    //ListIterator<T> it = l.Begin();
-    while(it != l.End())
+    cout<<"打印基本类型的非const对象"<<endl;
+    //定义一个容器类型的迭代器
+    class Container::Iterator it = con.Begin();
+    while(it != con.End())
     {
         cout<<*it<<" ";
-        ++it;
+        it++;
     }
     cout<<endl;
 }
 
-//打印自定义类型
+//基本类型：根据迭代器打印const对象的数据
+template<class Container>
+void Basic_Print_Const(const Container& con)
+{
+    cout<<"打印基本类型的const对象"<<endl;
+    class Container::Const_Iterator it = con.Begin();
+    while(it != con.End())
+    {
+        //*it = 10;
+        cout<<*it<<" ";
+        it++;
+    }
+    cout<<endl;
+}
+
+//自定义类型：打印非const的自定义类型
 template<class T>
-void Print2(List<T>& l)
+void Self_Print(List<T>& l)
 {
     class List<T>::Iterator it = l.Begin();
+    cout<<"打印非const类型的自定义类型"<<endl;
     while(it != l.End())
     {
         //此处it->相当于：it.operator->(),该函数的返回值是一个自定义类型的指针
@@ -214,15 +322,36 @@ void Print2(List<T>& l)
         //      此时，要输出数据成员，可以使用->运算符，相当于：add->a1
         //      所以，以上两步合在一起就可以表示为：it->->a1,在这里，为提高代码的可读性，编译器会进行处理
         //      将两个->默认为一个，所以可以直接调用it->a1即可达到同样的效果
-        cout<<it->a1<<" "<<it->a2<<",";
+        
+
+        ////方法一：对自定义类型的<<进行运算符重载
+        //cout<<*it<<" ";
+
+        //方法二：
+        //在迭代器类型中对->进行运算符重载
+        cout<<"("<<it->a1<<" "<<it->a2<<") ";
         it++;
     }
     cout<<endl;
 }
 
+//自定义类型：打印容器const类型的自定义类型
+template<class Container>
+void Self_Print_Const(const Container& con)
+{
+    class Container::Const_Iterator it = con.Begin();
+    cout<<"打印自定义类型的const对象"<<endl;
+    while(it != con.End())
+    {
+        cout<<"("<<it->a1<<" "<<it->a2<<")"<<" ";
+        it++;
+    }
+    cout<<endl;
+}
+
+
 int main()
 {
-
     //链表结点的数据域为自定义类型
     List<Type> l1;
     Type d = {10,4};
@@ -231,21 +360,17 @@ int main()
     {
         l1.PushBack(d);
     }
-
-    Print2(l1);
+    Self_Print(l1);
+    Self_Print_Const(l1);
 
     //链表结点数据域为基本类型
-    //List<int> l1;
-    //l1.PushBack(10);
-
-    //int i = 0;
-    //for(i = 0;i < 5;i++)
-    //{
-    //    l1.PushBack(i);
-    //}
-
-    //Print1(l1);
-    //List<int> l2(l1);
-    //Print2(l2);
+    List<int> l2;
+    l2.PushBack(10);
+    for(i = 0;i < 5;i++)
+    {
+        l2.PushBack(i);
+    }
+    Basic_Print(l2);
+    Basic_Print_Const(l2);
     return 0;
 }
