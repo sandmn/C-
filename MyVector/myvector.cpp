@@ -209,6 +209,33 @@ class Vector
             _start[pos] = data;
             _finish++;
         }
+        //防止迭代器失效：返回新插入元素的迭代器
+        Iterator Insert(Iterator pos,const T& data)
+        {
+            //首先判断插入的位置是否合法
+            assert(pos.point >= _start && pos.point <= _finish);
+            //不管扩不扩容，计算插入位置距起点有多少个结点
+            //如果扩容后在计算，就会出错
+            int count = pos.point - _start;
+            //如果容量不够，此时就需要进行扩容
+            if(_finish == _endofstarge)
+            {
+                Expand(2*Capacity() + 1);
+            }
+            //在容量已经足够的情况下，在数组中进行插入
+            //首先需要将pos及之后的元素均后移一个位置，然后进行插入，最后改变_finish的值
+            
+            int end = Size() - 1;
+            for(;end >= (int)count;end--)
+            {
+                _start[end + 1] = _start[end];
+            }
+            _start[count] = data;
+            _finish++;
+            Iterator tmp(_start + count);
+            return tmp;
+
+        }
 
         //计算Vector中的实际元素个数
         size_t Size()
@@ -250,6 +277,7 @@ class Vector
         {
             return Const_Iterator(_finish);
         }
+
 
     //vector中有三个成员变量
     private:
@@ -313,31 +341,37 @@ void Self_Print_Const(const Container& con)
 int main()
 {
     Vector<int> v1;
-    cout<<v1.Size()<<endl;
+    //cout<<v1.Size()<<endl;
     v1.PushBack(10);
     v1.PushBack(20);
-    v1.Display();
-    Vector<int> v2 = v1;
-    v2.Display();
-    v1 = v2;
-    v1.Display();
+    Vector<int>::Iterator it = v1.Begin();
+    it = v1.Insert(it,1);
+    cout<<*it<<endl;
     Print(v1);
-    Print_Const(v1);
+    it = v1.Insert(it,2);
+    cout<<*it<<endl;
+    Print(v1);
+    //Vector<int> v2 = v1;
+    //v2.Display();
+    //v1 = v2;
+    //v1.Display();
+    //Print(v1);
+    //Print_Const(v1);
 
-    Vector<string> s1;
-    s1.PushBack("yanxuechun");
-    s1.PushBack("hujiangqi");
-    Print(s1);
-    Print_Const(s1);
+    //Vector<string> s1;
+    //s1.PushBack("yanxuechun");
+    //s1.PushBack("hujiangqi");
+    //Print(s1);
+    //Print_Const(s1);
 
 
-    Type d = {1,10};
-    Vector<Type> t1;
-    t1.PushBack(d);
-    t1.PushBack(d);
-    t1.PushBack(d);
+    //Type d = {1,10};
+    //Vector<Type> t1;
+    //t1.PushBack(d);
+    //t1.PushBack(d);
+    //t1.PushBack(d);
 
-    Self_Print(t1);
-    Self_Print_Const(t1);
+    //Self_Print(t1);
+    //Self_Print_Const(t1);
     return 0;
 }
