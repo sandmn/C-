@@ -1,5 +1,6 @@
 #include<iostream>
 #include<list>
+#include<assert.h>
 using namespace std;
 //实现双向，循环带头节点的链表
 
@@ -159,6 +160,19 @@ struct ListIterator
         _Node = _Node->next;
         return tmp;
     }
+    //前置--运算符重载
+    Self& operator--()
+    {
+        _Node = _Node->prev;
+        return *this;
+    }
+    //后置--运算符重载
+    Self operator--(int)
+    {
+        ListIterator tmp(*this);
+        _Node = _Node->prev;
+        return tmp;
+    }
     //!=运算符重载
     bool operator != (const Self& it)
     {
@@ -220,6 +234,7 @@ class List
             _head->prev = new_node;
         }
 
+
         //拷贝构造函数
         //注意拷贝构造函数中不能进行值传递，否则会引发无穷递归
         List(const List<T>& l)
@@ -273,6 +288,76 @@ class List
                 delete _head;
             }
         }
+
+          //Begin:10
+          //pos:10
+          //0
+          //pos:10
+          //0
+          //pos:0
+          //next_node:0
+          //it:0
+          //打印基本类型的非const对象
+
+
+        ////删除节点，返回删除节点的下一个位置
+        //Iterator Erase(Iterator pos)
+        //{
+        //    //首先判断待删除的位置是否合法
+        //    assert(_head->next != _head && pos != End());
+        //    //将待删除位置保存下来
+        //    Iterator tmp = pos;
+        //    //寻找待删除位置的上一个元素
+        //    Iterator prev_node = --pos;
+        //    ++pos;
+        //    //寻找待删除元素的下一个元素
+        //    Iterator next_node = ++pos;
+
+        //    //修改上一个和下一个元素的指针域
+        //    prev_node._Node->next = next_node._Node;
+        //    next_node._Node->prev = prev_node._Node;
+        //    //删除待删除元素
+        //    delete tmp._Node;
+        //    //返回删除元素的下一个元素
+        //    return next_node;
+        //}
+
+
+        //Iterator Erase(Iterator pos)
+        //{
+        //    assert(_head->next != _head && pos != End());
+        //    Iterator to_delete = pos;
+        //    Node* prev_node = pos._Node->prev;
+        //    Node* next_node = pos._Node->next;
+        //    prev_node->next = next_node;
+        //    next_node->prev = prev_node;
+        //    delete to_delete._Node;
+        //    Iterator tmp(next_node);
+        //    return tmp;
+        //}
+
+        //优化源代码，使迭代器不失效
+        //删除节点
+        void Erase(Iterator& pos)
+        {
+            //首先保证链表不为空，且删除的位置合法（不为头结点且不超过尾节点）
+            assert(_head->next != _head && pos != _head);
+            //Node* next_node = pos._Node->next;
+
+            Iterator to_delete = pos;
+            Node* prev_node = pos._Node->prev;
+            Node* next_node = pos._Node->next;
+            prev_node->next = next_node;
+            next_node->prev = prev_node;
+            delete to_delete._Node;
+            pos._Node = next_node;
+            return;
+
+        }
+        //void Erase(Iterator& pos) const
+        //{
+        //       
+        //}
     private:
         Node* _head;
 };
@@ -353,15 +438,15 @@ void Self_Print_Const(const Container& con)
 int main()
 {
     //链表结点的数据域为自定义类型
-    List<Type> l1;
-    Type d = {10,4};
+    //List<Type> l1;
+    //Type d = {10,4};
     int i = 0;
-    for(i = 0;i < 5;i++)
-    {
-        l1.PushBack(d);
-    }
-    Self_Print(l1);
-    Self_Print_Const(l1);
+    //for(i = 0;i < 5;i++)
+    //{
+    //    l1.PushBack(d);
+    //}
+    //Self_Print(l1);
+    //Self_Print_Const(l1);
 
     //链表结点数据域为基本类型
     List<int> l2;
@@ -370,7 +455,26 @@ int main()
     {
         l2.PushBack(i);
     }
-    Basic_Print(l2);
-    Basic_Print_Const(l2);
+//    Basic_Print(l2);
+//    Basic_Print_Const(l2);
+
+    //验证删除任意位置的结点，返回值为删除结点的下一个位置
+    List<int>::Iterator it = l2.Begin();
+    //通过返回值使删除节点时迭代器不失效
+    //while(it != l2.End())
+    //{
+    //    it = l2.Erase(it);
+    //    Basic_Print(l2);
+    //}
+    //优化源代码,通过传引用的方式使迭代器不失效
+    while(it != l2.End())
+    {
+        l2.Erase(it);
+        Basic_Print(l2);
+    }
+    //it = l2.Erase(it);
+    //Basic_Print(l2);
+    //it = l2.Erase(it);
+    //Basic_Print(l2);
     return 0;
 }
