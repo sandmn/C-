@@ -209,8 +209,34 @@ class Vector
             _start[pos] = data;
             _finish++;
         }
-        //防止迭代器失效：返回新插入元素的迭代器
-        Iterator Insert(Iterator pos,const T& data)
+        ////防止迭代器失效：返回新插入元素的迭代器
+        //Iterator Insert(Iterator pos,const T& data)
+        //{
+        //    //首先判断插入的位置是否合法
+        //    assert(pos.point >= _start && pos.point <= _finish);
+        //    //不管扩不扩容，计算插入位置距起点有多少个结点
+        //    //如果扩容后在计算，就会出错
+        //    int count = pos.point - _start;
+        //    //如果容量不够，此时就需要进行扩容
+        //    if(_finish == _endofstarge)
+        //    {
+        //        Expand(2*Capacity() + 1);
+        //    }
+        //    //在容量已经足够的情况下，在数组中进行插入
+        //    //首先需要将pos及之后的元素均后移一个位置，然后进行插入，最后改变_finish的值
+        //    
+        //    int end = Size() - 1;
+        //    for(;end >= (int)count;end--)
+        //    {
+        //        _start[end + 1] = _start[end];
+        //    }
+        //    _start[count] = data;
+        //    _finish++;
+        //    Iterator tmp(_start + count);
+        //    return tmp;
+        //}
+        //参数传迭代器的引用：防止迭代器失效
+        void Insert(Iterator& pos,const T& data)
         {
             //首先判断插入的位置是否合法
             assert(pos.point >= _start && pos.point <= _finish);
@@ -232,9 +258,7 @@ class Vector
             }
             _start[count] = data;
             _finish++;
-            Iterator tmp(_start + count);
-            return tmp;
-
+            pos.point = _start +count;
         }
 
         //计算Vector中的实际元素个数
@@ -345,12 +369,24 @@ int main()
     v1.PushBack(10);
     v1.PushBack(20);
     Vector<int>::Iterator it = v1.Begin();
-    it = v1.Insert(it,1);
+
+    //通过传迭代器的引用防止迭代器失效
+    v1.Insert(it,1);
     cout<<*it<<endl;
     Print(v1);
-    it = v1.Insert(it,2);
+    v1.Insert(it,2);
     cout<<*it<<endl;
     Print(v1);
+
+    //通过插入位置的迭代器防止迭代器失效
+    //it = v1.Insert(it,1);
+    //cout<<*it<<endl;
+    //Print(v1);
+    //it = v1.Insert(it,2);
+    //cout<<*it<<endl;
+    //Print(v1);
+
+
     //Vector<int> v2 = v1;
     //v2.Display();
     //v1 = v2;
