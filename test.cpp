@@ -1,11 +1,16 @@
 #include<iostream>
+#include<sys/types.h>
+#include<sys/stat.h>
+#include<fcntl.h>
 #include<string>
 #include<stack>
 using namespace std;
 
 int main()
 {
+    int fd = open("log.txt",O_CREAT|O_RDWR);
     cout<<"hello world\n"<<endl;
+    close(fd);
     return 0;
 }
 
